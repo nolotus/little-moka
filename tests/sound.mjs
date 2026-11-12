@@ -1,0 +1,6 @@
+import assert from 'node:assert/strict';
+import {Sound} from '../dist/sound.js';
+const data=new Map();globalThis.localStorage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
+let scheduled=0,stopped=0;const param=()=>({setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}});const node=()=>({frequency:param(),gain:param(),Q:{},connect(){},disconnect(){},start(){scheduled++},stop(){stopped++}});
+class Context{state='running';currentTime=0;sampleRate=8000;destination={};createOscillator(){return node()}createGain(){return node()}createBufferSource(){return node()}createBiquadFilter(){return node()}createBuffer(_,size){return{getChannelData:()=>new Float32Array(size)}}}
+globalThis.window={AudioContext:Context};const sound=new Sound();for(const s of ['click','step','timer','finish'])sound.play(s);for(const s of ['grind','froth','water','pourCoffee','ice'])sound.action(s);assert(scheduled>15);assert.equal(stopped,scheduled);sound.toggle();const before=scheduled;sound.play('timer');sound.action('grind');assert.equal(scheduled,before);assert.equal(new Sound().enabled,false);sound.toggle();assert(scheduled>before);console.log('Passed: all sound cues schedule sources; mute stops and blocks playback; preference persists.');
